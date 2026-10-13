@@ -32,4 +32,3 @@ cache
 typechain-types
 coverage
 coverage.json
-src/contracts/*.json

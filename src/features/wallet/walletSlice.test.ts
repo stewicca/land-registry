@@ -4,7 +4,9 @@ import reducer, {
   connected,
   disconnected,
   selectIsAuthenticated,
+  selectIsWrongChain,
   selectUsername,
+  setChainId,
 } from './walletSlice';
 
 const stateWith = (wallet: ReturnType<typeof reducer>): RootState => ({ wallet } as RootState);
@@ -14,6 +16,7 @@ describe('walletSlice', () => {
     expect(reducer(undefined, { type: '@@init' })).toEqual({
       address: null,
       role: null,
+      chainId: null,
       status: 'idle',
     });
   });
@@ -38,5 +41,13 @@ describe('walletSlice', () => {
     expect(state.status).toBe('unauthenticated');
     expect(state.address).toBeNull();
     expect(selectIsAuthenticated(stateWith(state))).toBe(false);
+  });
+
+  it('flags a chain the app is not configured for', () => {
+    const local = stateWith(reducer(undefined, setChainId(31337)));
+    const elsewhere = stateWith(reducer(undefined, setChainId(1)));
+
+    expect(selectIsWrongChain(local)).toBe(false);
+    expect(selectIsWrongChain(elsewhere)).toBe(true);
   });
 });

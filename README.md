@@ -48,6 +48,7 @@ pnpm typecheck && pnpm lint && pnpm test
 | Variable | Description |
 |---|---|
 | `VITE_CHAIN_ID` | Chain the frontend expects, 31337 for the local Hardhat node |
-| `VITE_CONTRACT_ADDRESS` | Written by `scripts/deploy.cjs` after every deploy |
 
-The local Hardhat node is ephemeral: restarting it discards all parcels and changes the contract address, so deploy and seed again.
+`src/contracts/landRegistryAbi.json` and `src/contracts/contract-address.json` are written by `scripts/deploy.cjs` and committed, so the app typechecks and builds before a node is running.
+
+The local Hardhat node is ephemeral: restarting it discards every parcel, so deploy and seed again. A first deploy from the default account lands on the same deterministic address, which is usually why the committed address still matches.

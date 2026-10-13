@@ -1,17 +1,29 @@
-import { BrowserProvider, getAddress, type Eip1193Provider } from 'ethers';
+import { BrowserProvider, Contract, getAddress, type Eip1193Provider } from 'ethers';
+import { CONTRACT_ADDRESS, LAND_REGISTRY_ABI } from './config';
+
+interface WalletProvider extends Eip1193Provider {
+  on?(event: 'accountsChanged', handler: (accounts: unknown) => void): void;
+}
 
 declare global {
   interface Window {
-    ethereum?: Eip1193Provider;
+    ethereum?: WalletProvider;
   }
 }
+
+export type LandRegistryContract = Contract & {
+  admin(): Promise<string>;
+  notaries(address: string): Promise<boolean>;
+  getTotalRegisteredLands(): Promise<bigint>;
+  getLandOwner(landId: number): Promise<string>;
+};
 
 export const hasWallet = (): boolean =>
   typeof window !== 'undefined' && Boolean(window.ethereum);
 
-const requireWallet = (): Eip1193Provider => {
+const requireWallet = (): WalletProvider => {
   if (!hasWallet()) throw new Error('No wallet detected. Install MetaMask and reload.');
-  return window.ethereum as Eip1193Provider;
+  return window.ethereum as WalletProvider;
 };
 
 const checksummed = (accounts: unknown): string[] =>
@@ -25,4 +37,19 @@ export async function currentAccounts(): Promise<string[]> {
   return checksummed(await requireWallet().request({ method: 'eth_accounts' }));
 }
 
-export const getBrowserProvider = (): BrowserProvider => new BrowserProvider(requireWallet());
+export async function currentChainId(): Promise<number> {
+  const chainId = (await requireWallet().request({ method: 'eth_chainId' })) as string;
+  return Number.parseInt(chainId, 16);
+}
+
+export function onAccountsChanged(handler: (accounts: string[]) => void): void {
+  requireWallet().on?.('accountsChanged', (accounts: unknown) => handler(checksummed(accounts)));
+}
+
+export const getProvider = (): BrowserProvider => new BrowserProvider(requireWallet());
+
+export async function getRegistry(withSigner = false): Promise<LandRegistryContract> {
+  const provider = getProvider();
+  const runner = withSigner ? await provider.getSigner() : provider;
+  return new Contract(CONTRACT_ADDRESS, LAND_REGISTRY_ABI, runner) as LandRegistryContract;
+}

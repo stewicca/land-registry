@@ -1,5 +1,4 @@
-// Canonical role values — mirror your backend's role enum names here.
-export const ROLES = ['ADMIN', 'USER'] as const;
+export const ROLES = ['ADMIN', 'NOTARY', 'OWNER', 'USER'] as const;
 
 export type Role = (typeof ROLES)[number];
 
