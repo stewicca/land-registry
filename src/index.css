@@ -37,7 +37,7 @@
   :root {
     --radius: 0.45rem;
 
-    /* "Obsidian + Teal" — dark editorial theme */
+    /* "Obsidian + Teal", dark editorial theme */
     --background:         oklch(0.09 0.006 265);
     --foreground:         oklch(0.96 0.004 80);
 
@@ -54,12 +54,12 @@
     --secondary-foreground: oklch(0.76 0.004 80);
 
     --muted:              oklch(0.16 0.006 265);
-    --muted-foreground:   oklch(0.49 0.01 265);
+    --muted-foreground:   oklch(0.66 0.01 265);
 
     --accent:             oklch(0.18 0.006 265);
     --accent-foreground:  oklch(0.76 0.004 80);
 
-    --destructive:        oklch(0.56 0.22 25);
+    --destructive:        oklch(0.62 0.20 25);
     --destructive-foreground: oklch(0.96 0.004 80);
 
     --border:             oklch(0.22 0.008 265);
@@ -110,7 +110,7 @@
     animation: fade 0.6s ease forwards;
   }
 
-  /* Teal glow — used on interactive focus or accent elements */
+  /* Teal glow for interactive focus or accent elements */
   .glow-primary {
     box-shadow: 0 0 0 1px oklch(0.78 0.145 192 / 0.3),
                 0 0 20px oklch(0.78 0.145 192 / 0.08);

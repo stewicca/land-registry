@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, LogOut } from 'lucide-react';
+import { LandPlot, LayoutDashboard, LogOut, Wallet } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { selectRole, selectUsername } from '@/features/wallet/walletSlice';
+import { selectIsAuthenticated, selectRole, selectUsername } from '@/features/wallet/walletSlice';
 import { disconnectWalletThunk } from '@/features/wallet/walletThunks';
 import { hasAnyRole, ADMIN_ROLES } from '@/utils/role';
 import { Button } from '@/components/ui/button';
@@ -14,19 +14,19 @@ interface NavItem {
   to: string;
   label: string;
   icon: ReactNode;
+  /** Reachable without a wallet, so it shows for guests too. */
+  public?: boolean;
   adminOnly?: boolean;
 }
 
-// Add / remove nav items here as your app grows.
 const NAV: NavItem[] = [
+  { to: '/parcels', label: 'Parcels', icon: <LandPlot size={16} />, public: true },
   { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> },
 ];
 
-// ─── Brand ───────────────────────────────────────────────────────────────────
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex items-center gap-3">
-      {/* Logo mark — swap this with your logo SVG or an <img /> */}
       <div className="relative flex size-8 shrink-0 items-center justify-center">
         <div className="absolute inset-0 rounded-lg bg-primary/20 blur-sm" />
         <div className="relative grid size-8 place-items-center rounded-lg bg-primary/10 ring-1 ring-primary/30">
@@ -40,7 +40,6 @@ export function Brand({ compact = false }: { compact?: boolean }) {
   );
 }
 
-// ─── PageHeader ───────────────────────────────────────────────────────────────
 export function PageHeader({
   eyebrow,
   title,
@@ -67,28 +66,25 @@ export function PageHeader({
   );
 }
 
-// ─── AppLayout ────────────────────────────────────────────────────────────────
 export default function AppLayout({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch();
   const username = useAppSelector(selectUsername);
   const role = useAppSelector(selectRole);
+  const isConnected = useAppSelector(selectIsAuthenticated);
   const isAdmin = hasAnyRole(role, ADMIN_ROLES);
-  const items = NAV.filter((item) => !item.adminOnly || isAdmin);
+  const items = NAV.filter(
+    (item) => (item.public || isConnected) && (!item.adminOnly || isAdmin),
+  );
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-
-      {/* ── Desktop Sidebar ─────────────────────────────────────────────── */}
       <aside className="hidden md:flex w-[220px] shrink-0 flex-col border-r border-border bg-card">
-
-        {/* Brand */}
         <div className="flex h-[58px] shrink-0 items-center px-4 border-b border-border">
-          <NavLink to="/dashboard">
+          <NavLink to="/parcels">
             <Brand />
           </NavLink>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-0.5">
           {items.map((item) => (
             <NavLink
@@ -124,38 +120,48 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
         <Separator />
 
-        {/* User chip */}
         <div className="px-2 py-3">
-          <div className="flex items-center gap-3 rounded-md px-3 py-2">
-            {/* Avatar */}
-            <div className="grid size-7 shrink-0 place-items-center rounded-full bg-primary/20 text-xs font-semibold text-primary ring-1 ring-primary/20">
-              {(username ?? '?').charAt(0).toUpperCase()}
+          {isConnected ? (
+            <div className="flex items-center gap-3 rounded-md px-3 py-2">
+              <div className="grid size-7 shrink-0 place-items-center rounded-full bg-primary/20 text-xs font-semibold text-primary ring-1 ring-primary/20">
+                {(username ?? '?').charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-foreground">{username}</p>
+                <Badge variant="secondary" className="mt-0.5 text-[10px] px-1.5 py-0 h-4 rounded-sm">
+                  {role}
+                </Badge>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => dispatch(disconnectWalletThunk())}
+                className="shrink-0 text-muted-foreground hover:text-destructive"
+                aria-label="Disconnect wallet"
+              >
+                <LogOut size={14} />
+              </Button>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-foreground">{username}</p>
-              <Badge variant="secondary" className="mt-0.5 text-[10px] px-1.5 py-0 h-4 rounded-sm">
-                {role}
-              </Badge>
+          ) : (
+            <div className="space-y-3 rounded-md px-3 py-2">
+              <div>
+                <p className="text-sm font-medium text-foreground">Not connected</p>
+                <p className="text-[11px] text-muted-foreground">Reading the public record</p>
+              </div>
+              <Button asChild variant="outline" size="sm" className="w-full justify-center">
+                <NavLink to="/login">
+                  <Wallet size={14} />
+                  Connect wallet
+                </NavLink>
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => dispatch(disconnectWalletThunk())}
-              className="shrink-0 text-muted-foreground hover:text-destructive"
-              aria-label="Log out"
-            >
-              <LogOut size={14} />
-            </Button>
-          </div>
+          )}
         </div>
       </aside>
 
-      {/* ── Right column (mobile top bar + main content) ─────────────────── */}
       <div className="flex flex-1 flex-col overflow-hidden">
-
-        {/* Mobile top bar */}
         <header className="flex h-[58px] shrink-0 items-center gap-3 border-b border-border bg-card px-4 md:hidden">
-          <NavLink to="/dashboard" className="shrink-0">
+          <NavLink to="/parcels" className="shrink-0">
             <Brand compact />
           </NavLink>
 
@@ -179,18 +185,30 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             ))}
           </nav>
 
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => dispatch(disconnectWalletThunk())}
-            className="shrink-0 text-muted-foreground hover:text-destructive"
-            aria-label="Log out"
-          >
-            <LogOut size={15} />
-          </Button>
+          {isConnected ? (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => dispatch(disconnectWalletThunk())}
+              className="shrink-0 text-muted-foreground hover:text-destructive"
+              aria-label="Disconnect wallet"
+            >
+              <LogOut size={15} />
+            </Button>
+          ) : (
+            <Button
+              asChild
+              variant="ghost"
+              size="icon-sm"
+              className="shrink-0 text-muted-foreground hover:text-foreground"
+            >
+              <NavLink to="/login" aria-label="Connect wallet">
+                <Wallet size={15} />
+              </NavLink>
+            </Button>
+          )}
         </header>
 
-        {/* Main scrollable content */}
         <main className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
             {children}

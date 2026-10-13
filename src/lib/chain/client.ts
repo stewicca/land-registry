@@ -1,5 +1,16 @@
-import { BrowserProvider, Contract, getAddress, type Eip1193Provider } from 'ethers';
-import { CONTRACT_ADDRESS, LAND_REGISTRY_ABI } from './config';
+import { BrowserProvider, Contract, JsonRpcProvider, getAddress, type Eip1193Provider } from 'ethers';
+import { CONTRACT_ADDRESS, LAND_REGISTRY_ABI, RPC_URL } from './config';
+
+export type LandRecord = {
+  id: bigint;
+  coordinates: string;
+  area: bigint;
+  owner: string;
+  status: bigint;
+  registeredAt: bigint;
+  history: string[];
+  documentHashes: string[];
+};
 
 interface WalletProvider extends Eip1193Provider {
   on?(event: 'accountsChanged', handler: (accounts: unknown) => void): void;
@@ -16,6 +27,9 @@ export type LandRegistryContract = Contract & {
   notaries(address: string): Promise<boolean>;
   getTotalRegisteredLands(): Promise<bigint>;
   getLandOwner(landId: number): Promise<string>;
+  getLandDetails(landId: number): Promise<LandRecord>;
+  getLandDocuments(landId: number): Promise<string[]>;
+  isLandDisputed(landId: number): Promise<boolean>;
 };
 
 export const hasWallet = (): boolean =>
@@ -48,8 +62,16 @@ export function onAccountsChanged(handler: (accounts: string[]) => void): void {
 
 export const getProvider = (): BrowserProvider => new BrowserProvider(requireWallet());
 
-export async function getRegistry(withSigner = false): Promise<LandRegistryContract> {
-  const provider = getProvider();
-  const runner = withSigner ? await provider.getSigner() : provider;
-  return new Contract(CONTRACT_ADDRESS, LAND_REGISTRY_ABI, runner) as LandRegistryContract;
+let readProvider: JsonRpcProvider | null = null;
+
+/** Reads go over plain JSON-RPC so the public record works without a wallet. */
+export function getReadRegistry(): LandRegistryContract {
+  readProvider ??= new JsonRpcProvider(RPC_URL);
+  return new Contract(CONTRACT_ADDRESS, LAND_REGISTRY_ABI, readProvider) as LandRegistryContract;
+}
+
+/** Writes are signed by the connected wallet, which is what makes the access modifiers mean something. */
+export async function getSignerRegistry(): Promise<LandRegistryContract> {
+  const signer = await getProvider().getSigner();
+  return new Contract(CONTRACT_ADDRESS, LAND_REGISTRY_ABI, signer) as LandRegistryContract;
 }

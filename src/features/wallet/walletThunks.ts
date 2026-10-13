@@ -5,7 +5,7 @@ import { extractMessage } from '@/lib/extractMessage';
 import {
   currentAccounts,
   currentChainId,
-  getRegistry,
+  getReadRegistry,
   hasWallet,
   onAccountsChanged,
   requestAccounts,
@@ -24,7 +24,7 @@ async function ownsAnyParcel(registry: LandRegistryContract, address: string): P
 }
 
 async function resolveRole(address: string): Promise<Role> {
-  const registry = await getRegistry();
+  const registry = getReadRegistry();
   if ((await registry.admin()).toLowerCase() === address.toLowerCase()) return 'ADMIN';
   if (await registry.notaries(address)) return 'NOTARY';
   if (await ownsAnyParcel(registry, address)) return 'OWNER';

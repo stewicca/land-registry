@@ -47,6 +47,7 @@ pnpm typecheck && pnpm lint && pnpm test
 | Variable | Description |
 |---|---|
 | `VITE_CHAIN_ID` | Chain the frontend expects, 31337 for the local Hardhat node |
+| `VITE_RPC_URL` | Read-only JSON-RPC endpoint, so the public pages work without a wallet |
 
 `src/contracts/landRegistryAbi.json` and `src/contracts/contract-address.json` are written by `scripts/deploy.cjs` and committed, so the app typechecks and builds before a node is running.
 

@@ -14,7 +14,7 @@ export default function NotFoundPage() {
         404
       </p>
 
-      {/* Content — overlaps the big number */}
+      {/* Content sits over the big number */}
       <div className="animate-rise absolute flex flex-col items-center gap-4" style={{ animationDelay: '60ms' }}>
         <h1 className="font-serif italic text-3xl font-normal text-foreground sm:text-4xl">
           Page not found

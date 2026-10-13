@@ -50,7 +50,7 @@ export const selectRole = (state: RootState) => state.wallet.role;
 export const selectChainId = (state: RootState) => state.wallet.chainId;
 export const selectWalletStatus = (state: RootState) => state.wallet.status;
 
-/** Alias kept so ProtectedRoute and AuthRedirect stay unchanged. */
+/** ProtectedRoute reads the session through this name. */
 export const selectAuthStatus = selectWalletStatus;
 
 export const selectIsWrongChain = (state: RootState) =>

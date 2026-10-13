@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import walletReducer from '@/features/wallet/walletSlice';
+import landReducer from '@/features/land/landSlice';
 import uiReducer from '@/features/ui/uiSlice';
 import { asyncStatusMiddleware } from '@/features/ui/asyncStatusMiddleware';
 
@@ -8,6 +9,7 @@ export const makeTestStore = () =>
   configureStore({
     reducer: {
       wallet: walletReducer,
+      land: landReducer,
       ui: uiReducer,
     },
     middleware: (getDefault) => getDefault().concat(asyncStatusMiddleware),

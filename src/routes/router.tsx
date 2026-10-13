@@ -1,16 +1,23 @@
-import { createBrowserRouter } from 'react-router-dom';
-import AuthRedirect from './AuthRedirect';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import LoginPage from '@/pages/LoginPage';
 import DashboardPage from '@/pages/DashboardPage';
+import ParcelsPage from '@/pages/ParcelsPage';
+import ParcelDetailPage from '@/pages/ParcelDetailPage';
 import NotFoundPage from '@/pages/NotFoundPage';
-// import { ADMIN_ROLES } from '@/utils/role';
 
-// Add new routes here. For admin-only routes, pass: allowedRoles={ADMIN_ROLES}
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <AuthRedirect />,
+    element: <Navigate to="/parcels" replace />,
+  },
+  {
+    path: '/parcels',
+    element: <ParcelsPage />,
+  },
+  {
+    path: '/parcels/:id',
+    element: <ParcelDetailPage />,
   },
   {
     path: '/login',
@@ -24,15 +31,6 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
-  // Example protected page:
-  // {
-  //   path: '/items',
-  //   element: (
-  //     <ProtectedRoute>
-  //       <ItemsPage />
-  //     </ProtectedRoute>
-  //   ),
-  // },
   {
     path: '*',
     element: <NotFoundPage />,
