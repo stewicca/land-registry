@@ -2,7 +2,7 @@
 
 Blockchain-based land parcel registry: parcel registration, chain of title, document hashes, and dispute status, with administrative actions restricted to authorized wallets.
 
-Frontend base: own React boilerplate (React 19 + Vite + Redux Toolkit + shadcn/ui). Contract toolchain: Hardhat, Solidity 0.8.24, ethers v6. Planning and progress tracking live in `docs/PLAN.md`.
+Frontend base: own React boilerplate (React 19 + Vite + Redux Toolkit + shadcn/ui). Contract toolchain: Hardhat, Solidity 0.8.24, ethers v6.
 
 ## Stack
 
@@ -24,7 +24,6 @@ There is no backend. Authorization is enforced by the contract and signed in the
 contracts/          Solidity sources
 scripts/            deploy and seed scripts
 test/               Hardhat contract tests
-docs/PLAN.md        implementation plan and phase checklist
 src/lib/chain/      wallet and contract access
 src/features/       feature slices (wallet, land, ui)
 src/pages/          one file per route
