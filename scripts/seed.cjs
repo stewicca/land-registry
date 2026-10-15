@@ -1,8 +1,19 @@
 const fs = require("fs");
 const path = require("path");
 
-const NOTARY_INDEX = 3;
-const STAFF_INDEX = 4;
+/**
+ * Owners, notary, examiner, and financing officer are fixed addresses rather than signer indexes:
+ * deploy and seed are signed by the DEPLOYER_KEY account, so the node's own accounts are not
+ * available as signers here. These are the Hardhat default accounts, importable into MetaMask.
+ */
+const DEMO = {
+  ownerOne: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+  ownerTwo: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+  notary: "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+  examiner: "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+  financing: "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+  stranger: "0xa0Ee7A142d267C1f36714E4a8F75612F20a79720",
+};
 
 const square = (x, y, size) => [
   [x, y],
@@ -18,9 +29,9 @@ const ORIGIN_Y = 10760980;
 const SIZE = 1000;
 
 const PARCELS = [
-  { coordinates: path_(square(ORIGIN_X, ORIGIN_Y, SIZE)), area: 250, ownerIndex: 1 },
-  { coordinates: path_(square(ORIGIN_X, ORIGIN_Y + 2000, SIZE)), area: 300, ownerIndex: 2 },
-  { coordinates: path_(square(ORIGIN_X, ORIGIN_Y + 4000, SIZE)), area: 400, ownerIndex: 1 },
+  { coordinates: path_(square(ORIGIN_X, ORIGIN_Y, SIZE)), area: 250, owner: DEMO.ownerOne },
+  { coordinates: path_(square(ORIGIN_X, ORIGIN_Y + 2000, SIZE)), area: 300, owner: DEMO.ownerTwo },
+  { coordinates: path_(square(ORIGIN_X, ORIGIN_Y + 4000, SIZE)), area: 400, owner: DEMO.ownerOne },
 ];
 
 async function main() {
@@ -28,8 +39,8 @@ async function main() {
     fs.readFileSync(path.join(__dirname, "..", "src", "contracts", "contract-address.json"), "utf8"),
   ).LandRegistry;
 
-  const signers = await ethers.getSigners();
-  const registry = await ethers.getContractAt("LandRegistry", address, signers[0]);
+  const [admin] = await ethers.getSigners();
+  const registry = await ethers.getContractAt("LandRegistry", address, admin);
 
   const registered = await registry.getTotalRegisteredLands();
   if (registered > 0n) {
@@ -37,21 +48,21 @@ async function main() {
     return;
   }
 
-  console.log("Seeding", address);
-  await (await registry.registerNotary(signers[NOTARY_INDEX].address)).wait();
-  console.log("Notary registered:", signers[NOTARY_INDEX].address);
+  console.log("Seeding", address, "as admin", await admin.getAddress());
+  await (await registry.registerNotary(DEMO.notary)).wait();
 
   for (const [index, parcel] of PARCELS.entries()) {
-    const owner = signers[parcel.ownerIndex].address;
-    await (await registry.registerLand(parcel.coordinates, parcel.area, owner)).wait();
-    console.log(`Parcel ${index + 1} registered for`, owner);
+    await (await registry.registerLand(parcel.coordinates, parcel.area, parcel.owner)).wait();
+    console.log(`Parcel ${index + 1} registered for`, parcel.owner);
   }
 
   await (await registry.addLandDocument(1, "QmSeedCertificate0001")).wait();
   await (await registry.updateLandStatus(2, 1)).wait();
   console.log("Parcel 1 got a document hash, parcel 2 is marked disputed");
 
-  console.log("Staff account (not a role in the contract):", signers[STAFF_INDEX].address);
+  console.log("Notary:   ", DEMO.notary);
+  console.log("Examiner: ", DEMO.examiner, "(app layer role, list it in VITE_AUDITOR_ADDRESSES)");
+  console.log("Financing:", DEMO.financing, "(app layer role, list it in VITE_BANK_ADDRESSES)");
 }
 
 main()

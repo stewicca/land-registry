@@ -12,6 +12,7 @@ import {
   type LandRegistryContract,
 } from '@/lib/chain/client';
 import type { Role } from '@/utils/role';
+import { AUDITOR_ADDRESSES, BANK_ADDRESSES } from '@/lib/chain/config';
 import { connected, disconnected, setChainId, setStatus } from './walletSlice';
 
 /** ponytail: one read per registered parcel on connect. An owner index in the contract replaces this if the registry grows. */
@@ -25,7 +26,11 @@ async function ownsAnyParcel(registry: LandRegistryContract, address: string): P
 
 async function resolveRole(address: string): Promise<Role> {
   const registry = getReadRegistry();
-  if ((await registry.admin()).toLowerCase() === address.toLowerCase()) return 'ADMIN';
+  const candidate = address.toLowerCase();
+
+  if ((await registry.admin()).toLowerCase() === candidate) return 'ADMIN';
+  if (AUDITOR_ADDRESSES.includes(candidate)) return 'AUDITOR';
+  if (BANK_ADDRESSES.includes(candidate)) return 'BANK';
   if (await registry.notaries(address)) return 'NOTARY';
   if (await ownsAnyParcel(registry, address)) return 'OWNER';
   return 'USER';

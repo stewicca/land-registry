@@ -2,19 +2,12 @@ import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import AppLayout, { PageHeader } from '@/components/AppLayout';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import StatusBadge from '@/components/StatusBadge';
 import { fetchParcelThunk } from '@/features/land/landThunks';
 import { selectLandError, selectLandStatus, selectSelectedParcel } from '@/features/land/landSlice';
-import type { LandStatusName } from '@/features/land/types';
 
-const STATUS_VARIANT: Record<LandStatusName, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  AKTIF: 'default',
-  SENGKETA: 'destructive',
-  DIBATALKAN: 'outline',
-  UNKNOWN: 'outline',
-};
 
 const formatRegistered = (seconds: number) =>
   new Date(seconds * 1000).toLocaleDateString(undefined, { dateStyle: 'medium' });
@@ -81,7 +74,7 @@ export default function ParcelDetailPage() {
               <div>
                 <dt className="text-xs uppercase tracking-wide text-muted-foreground">Status</dt>
                 <dd className="mt-1">
-                  <Badge variant={STATUS_VARIANT[parcel.status]}>{parcel.status}</Badge>
+                  <StatusBadge status={parcel.status} />
                 </dd>
               </div>
               <div>

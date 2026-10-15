@@ -10,3 +10,13 @@ export const RPC_URL = import.meta.env.VITE_RPC_URL ?? 'http://localhost:8545';
 export const CONTRACT_ADDRESS = contractAddress.LandRegistry;
 
 export const LAND_REGISTRY_ABI = landRegistryAbi;
+
+const parseAddressList = (value: string | undefined): string[] =>
+  (value ?? '')
+    .split(',')
+    .map((entry) => entry.trim().toLowerCase())
+    .filter((entry) => entry.length > 0);
+
+/** Auditor and bank have no on-chain registration in the contract, so the app gates them by address list. */
+export const AUDITOR_ADDRESSES = parseAddressList(import.meta.env.VITE_AUDITOR_ADDRESSES);
+export const BANK_ADDRESSES = parseAddressList(import.meta.env.VITE_BANK_ADDRESSES);

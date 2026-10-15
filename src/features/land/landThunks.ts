@@ -24,7 +24,8 @@ export const fetchParcelsThunk = createAppAsyncThunk<LandParcel[]>(
       return rejectWithValue(message);
     }
   },
-  { uiType: 'fetching', guardFlag: 'isFetching' },
+  // No guardFlag: a dropped read leaves the page empty, and the double-submit guard exists for writes.
+  { uiType: 'fetching' },
 );
 
 /** Resolves to null when the id is outside the registered range, which is not an error worth a toast. */

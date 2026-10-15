@@ -1,10 +1,20 @@
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LandPlot, LayoutDashboard, LogOut, Wallet } from 'lucide-react';
+import {
+  ClipboardList,
+  LandPlot,
+  LayoutDashboard,
+  LogOut,
+  MapPinned,
+  Settings,
+  ShieldCheck,
+  Stamp,
+  Wallet,
+} from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { selectIsAuthenticated, selectRole, selectUsername } from '@/features/wallet/walletSlice';
 import { disconnectWalletThunk } from '@/features/wallet/walletThunks';
-import { hasAnyRole, ADMIN_ROLES } from '@/utils/role';
+import { hasAnyRole, ADMIN_ROLES, type Role } from '@/utils/role';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -16,12 +26,18 @@ interface NavItem {
   icon: ReactNode;
   /** Reachable without a wallet, so it shows for guests too. */
   public?: boolean;
-  adminOnly?: boolean;
+  /** Roles that may see the item. Omitted means any connected wallet. */
+  roles?: Role[];
 }
 
 const NAV: NavItem[] = [
   { to: '/parcels', label: 'Parcels', icon: <LandPlot size={16} />, public: true },
   { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} /> },
+  { to: '/admin', label: 'Admin', icon: <Settings size={16} />, roles: ADMIN_ROLES },
+  { to: '/my-parcels', label: 'My parcels', icon: <MapPinned size={16} />, roles: ['OWNER'] },
+  { to: '/notary', label: 'Notary', icon: <Stamp size={16} />, roles: ['NOTARY'] },
+  { to: '/audit', label: 'Audit', icon: <ClipboardList size={16} />, roles: ['AUDITOR'] },
+  { to: '/verify', label: 'Verify', icon: <ShieldCheck size={16} />, roles: ['BANK'] },
 ];
 
 export function Brand({ compact = false }: { compact?: boolean }) {
@@ -71,9 +87,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const username = useAppSelector(selectUsername);
   const role = useAppSelector(selectRole);
   const isConnected = useAppSelector(selectIsAuthenticated);
-  const isAdmin = hasAnyRole(role, ADMIN_ROLES);
   const items = NAV.filter(
-    (item) => (item.public || isConnected) && (!item.adminOnly || isAdmin),
+    (item) =>
+      (item.public || isConnected) && (!item.roles || hasAnyRole(role, item.roles)),
   );
 
   return (

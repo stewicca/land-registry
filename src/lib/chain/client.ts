@@ -1,5 +1,12 @@
-import { BrowserProvider, Contract, JsonRpcProvider, getAddress, type Eip1193Provider } from 'ethers';
-import { CONTRACT_ADDRESS, LAND_REGISTRY_ABI, RPC_URL } from './config';
+import {
+  BrowserProvider,
+  Contract,
+  JsonRpcProvider,
+  getAddress,
+  type ContractTransactionResponse,
+  type Eip1193Provider,
+} from 'ethers';
+import { CHAIN_ID, CONTRACT_ADDRESS, LAND_REGISTRY_ABI, RPC_URL } from './config';
 
 export type LandRecord = {
   id: bigint;
@@ -30,6 +37,13 @@ export type LandRegistryContract = Contract & {
   getLandDetails(landId: number): Promise<LandRecord>;
   getLandDocuments(landId: number): Promise<string[]>;
   isLandDisputed(landId: number): Promise<boolean>;
+  registerLand(coordinates: string, area: number | bigint, owner: string): Promise<ContractTransactionResponse>;
+  addLandDocument(landId: number, ipfsHash: string): Promise<ContractTransactionResponse>;
+  registerNotary(notary: string): Promise<ContractTransactionResponse>;
+  transferOwnership(landId: number, newOwner: string): Promise<ContractTransactionResponse>;
+  updateLandStatus(landId: number, status: number): Promise<ContractTransactionResponse>;
+  updateLandArea(landId: number, newArea: number | bigint): Promise<ContractTransactionResponse>;
+  revokeLandRegistration(landId: number): Promise<ContractTransactionResponse>;
 };
 
 export const hasWallet = (): boolean =>
@@ -66,7 +80,8 @@ let readProvider: JsonRpcProvider | null = null;
 
 /** Reads go over plain JSON-RPC so the public record works without a wallet. */
 export function getReadRegistry(): LandRegistryContract {
-  readProvider ??= new JsonRpcProvider(RPC_URL);
+  // Static network: the chain comes from config, so the provider skips its detection round trip.
+  readProvider ??= new JsonRpcProvider(RPC_URL, CHAIN_ID, { staticNetwork: true });
   return new Contract(CONTRACT_ADDRESS, LAND_REGISTRY_ABI, readProvider) as LandRegistryContract;
 }
 

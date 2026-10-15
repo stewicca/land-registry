@@ -25,7 +25,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   }
 
   if (allowedRoles && !hasAnyRole(role, allowedRoles)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/parcels" replace />;
   }
 
   return <>{children}</>;

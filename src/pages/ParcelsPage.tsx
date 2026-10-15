@@ -2,22 +2,13 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import AppLayout, { PageHeader } from '@/components/AppLayout';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import StatusBadge from '@/components/StatusBadge';
 import { fetchParcelsThunk } from '@/features/land/landThunks';
 import { selectLandError, selectLandStatus, selectParcels } from '@/features/land/landSlice';
-import type { LandStatusName } from '@/features/land/types';
+import { shortAddress } from '@/lib/format';
 import { selectIsFetching } from '@/features/ui/uiSlice';
-
-const STATUS_VARIANT: Record<LandStatusName, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  AKTIF: 'default',
-  SENGKETA: 'destructive',
-  DIBATALKAN: 'outline',
-  UNKNOWN: 'outline',
-};
-
-const shortAddress = (address: string) => `${address.slice(0, 6)}…${address.slice(-4)}`;
 
 export default function ParcelsPage() {
   const dispatch = useAppDispatch();
@@ -96,7 +87,7 @@ export default function ParcelsPage() {
                   </td>
                   <td className="px-5 py-3 text-foreground">{parcel.area.toString()} m²</td>
                   <td className="px-5 py-3">
-                    <Badge variant={STATUS_VARIANT[parcel.status]}>{parcel.status}</Badge>
+                    <StatusBadge status={parcel.status} />
                   </td>
                   <td className="hidden px-5 py-3 font-mono text-xs text-muted-foreground md:table-cell">
                     {shortAddress(parcel.owner)}
