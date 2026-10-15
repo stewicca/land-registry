@@ -12,8 +12,15 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { selectIsAuthenticated, selectRole, selectUsername } from '@/features/wallet/walletSlice';
+import {
+  selectChainId,
+  selectIsAuthenticated,
+  selectIsWrongChain,
+  selectRole,
+  selectUsername,
+} from '@/features/wallet/walletSlice';
 import { disconnectWalletThunk } from '@/features/wallet/walletThunks';
+import { CHAIN_ID } from '@/lib/chain/config';
 import { hasAnyRole, ADMIN_ROLES, type Role } from '@/utils/role';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -87,6 +94,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const username = useAppSelector(selectUsername);
   const role = useAppSelector(selectRole);
   const isConnected = useAppSelector(selectIsAuthenticated);
+  const chainId = useAppSelector(selectChainId);
+  const isWrongChain = useAppSelector(selectIsWrongChain);
   const items = NAV.filter(
     (item) =>
       (item.public || isConnected) && (!item.roles || hasAnyRole(role, item.roles)),
@@ -224,6 +233,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </Button>
           )}
         </header>
+
+        {isConnected && isWrongChain && (
+          <p className="shrink-0 border-b border-destructive/40 bg-destructive/10 px-5 py-3 text-sm text-foreground sm:px-8">
+            Your wallet is on chain {chainId}, but this registry lives on chain {CHAIN_ID}. Reads come
+            from the configured endpoint, yet every write would be signed on the wrong network and
+            rejected, or worse, pay a real fee. Switch the network in your wallet first.
+          </p>
+        )}
 
         <main className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
